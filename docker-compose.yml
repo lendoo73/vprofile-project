@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  vprodb: # this name is the similar with the "db URI string in the 'application.properties' file
+    build:
+      context: ./Docker-files/db
+    image: lendoo73/vprofiledb # this is the image name we created on 'Docker Hub'
+    container_name: vprodb # this will be the name of the container in our Docker
+    ports:
+      - "3306:3306"
+    volumes:
+      - vprodbdata:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=vprodbpass
+  
+  vprocache01: # based on the 'application.properties' file: memcached.active.host
+    image: memcached
+    ports:
+      - "11211:11211"
+  
+  vpromq01: # 'application.properties' file: rabbitmq.address
+    image: rabbitmq
+    ports:
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  vproapp: 
+    build:
+      context: ./Docker-files/app
+    image: lendoo73/vprofileapp 
+    container_name: vproapp
+    ports:
+      - "8080:8080"
+    volumes:
+      - vproappdata:/usr/local/tomcat/webapps
+  
+  vproweb: 
+    build:
+      context: ./Docker-files/web
+    image: lendoo73/vprofileweb
+    container_name: vproweb
+    ports:
+      - "80:80"
+  
+volumes:
+  vprodbdata: {} # created in the current directory
+  vproappdata: {}
